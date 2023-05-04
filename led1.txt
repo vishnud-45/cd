@@ -1,0 +1,69 @@
+//led by polling method
+#include <lpc17xx.h>   
+#define SwitchPinNumber 11
+#define LedPinNumber    2
+/* start the main program */
+int main() 
+{
+    uint32_t switchStatus;
+    SystemInit();                             /* Clock and PLL configuration  */
+    LPC_PINCON->PINSEL4 = 0x000000;           /* Configure the Pins for GPIO  */
+    /* Configure the LED pin as output and SwitchPin as input */
+    LPC_GPIO2->FIODIR = ((1<<LedPinNumber) | (0<<SwitchPinNumber)); 
+    while(1)
+    {
+        /* Turn On all the leds and wait for one second */ 
+        switchStatus = (LPC_GPIO2->FIOPIN>>SwitchPinNumber) & 0x01 ;  /* Read the switch status */
+        if(switchStatus == 1)                        /* Turn ON/OFF LEDs depending on switch status */
+        {  
+            LPC_GPIO2->FIOPIN = (1<<LedPinNumber);
+        }
+        else
+        {
+            LPC_GPIO2->FIOPIN = (0<<LedPinNumber);
+        }      
+    }
+}
+
+
+//Output:Mask pin 11(tick in FIO2MASK Column) to switch on/off the LED . Go to peripheralsGPIO PinsPin2
+//Control an LED using switch by interrupt method
+#include <lpc17xx.h>   
+#define PINSEL_EINT0    20
+#define PINSEL_EINT1    22
+#define LED1            0   
+#define LED2            1    
+#define SBIT_EINT0      0
+#define SBIT_EINT1      1  
+#define SBIT_EXTMODE0   0
+#define SBIT_EXTMODE1   1
+#define SBIT_EXTPOLAR0  0
+#define SBIT_EXTPOLAR1  1
+void EINT0_IRQHandler(void)
+{
+    LPC_SC->EXTINT = (1<<SBIT_EINT0);  /* Clear Interrupt Flag */
+    LPC_GPIO2->FIOPIN ^= (1<< LED1);   /* Toggle the LED1 everytime INTR0 is generated */
+}
+void EINT1_IRQHandler(void)
+{
+    LPC_SC->EXTINT = (1<<SBIT_EINT1);  /* Clear Interrupt Flag */
+    LPC_GPIO2->FIOPIN ^= (1<< LED2);   /* Toggle the LED2 everytime INTR1 is generated */
+}
+int main()
+{
+    SystemInit();
+    LPC_SC->EXTINT      = (1<<SBIT_EINT0)    | (1<<SBIT_EINT1);	    /* Clear Pending interrupts */
+    LPC_PINCON->PINSEL4 = (1<<PINSEL_EINT0)  | (1<<PINSEL_EINT1);   /* Configure P2_10,P2_11 as EINT0/1 */
+    LPC_SC->EXTMODE     = (1<<SBIT_EXTMODE0) | (1<<SBIT_EXTMODE1);  /* Configure EINTx as Edge Triggered*/
+    LPC_SC->EXTPOLAR    = (1<<SBIT_EXTPOLAR0)| (1<<SBIT_EXTPOLAR0); /* Configure EINTx as Falling Edge */
+    LPC_GPIO2->FIODIR   = (1<<LED1)  | (1<<LED2);                   /* Configure LED pins as OUTPUT */
+    LPC_GPIO2->FIOPIN   =  0x00;
+    NVIC_EnableIRQ(EINT0_IRQn);    /* Enable the EINT0,EINT1 interrupts */
+    NVIC_EnableIRQ(EINT1_IRQn);  
+    while(1)
+    {
+      // Do nothing
+    }      
+}
+Output:
+Go to peripheralsGPIO PinsPin2

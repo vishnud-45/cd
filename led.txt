@@ -1,0 +1,53 @@
+//Blink an LED with software delay
+#include <lpc17xx.h>   
+void delay_ms(unsigned int ms)
+{
+    unsigned int i,j;
+    for(i=0;i<ms;i++)
+        for(j=0;j<20000;j++);
+}
+/* start the main program */
+int main(void) 
+{
+    SystemInit();                    /*Clock and PLL configuration*/ 
+    LPC_PINCON->PINSEL4 = 0xffffffff;  /*Configure the PORT2 Pins as GPIO;*/
+    LPC_GPIO2->FIODIR = 0xffffffff;  /*Configure the PORT2 pins as OUTPUT;*/
+    while(1)
+    {
+        LPC_GPIO2->FIOSET = 0xffffffff;     /* Make all the Port pins as high */
+        delay_ms(10);
+        LPC_GPIO2->FIOCLR = 0xffffffff;     /* Make all the Port pins as low */
+        delay_ms(10);
+    }
+}
+//output: In Peripherals  GPIO pins  check pin 2 to see the pins.
+
+//Blink an LED with delay generated using the SysTick timer
+#include <LPC17xx.h>    
+/* Systick Register address, refer datasheet for more info */
+#define STCTRL      (*( ( volatile unsigned long *) 0xE000E010 ))
+#define STRELOAD    (*( ( volatile unsigned long *) 0xE000E014 ))
+#define STCURR      (*( ( volatile unsigned long *) 0xE000E018 ))  
+/*******STCTRL bits*******/
+#define SBIT_ENABLE     0
+#define SBIT_TICKINT    1
+#define SBIT_CLKSOURCE  2     /* 100000000Mhz * 1ms = 1000000 - 1 */
+#define RELOAD_VALUE  99999999
+#define LED   2 //P2_2
+int main (void) 
+{
+    SystemInit();
+    STRELOAD = RELOAD_VALUE;    // Reload value for 100ms tick
+    /* Enable the Systick, Systick Interrup and select CPU Clock Source */
+    STCTRL = (1<<SBIT_ENABLE) | (1<<SBIT_TICKINT) | (1<<SBIT_CLKSOURCE);
+    LPC_GPIO2->FIODIR = (1<<LED);            /* Configure the Led Pin as Output */
+    while(1)
+    {
+        //do nothing
+    }
+}
+void SysTick_Handler(void)
+{
+    LPC_GPIO2->FIOPIN ^= (1<<LED); /* Toggle the LED1 (P2_0) */
+}
+
