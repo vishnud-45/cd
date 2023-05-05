@@ -1,0 +1,74 @@
+//store memory adress	
+AREA Add,code,READONLY
+	ENTRY
+	EXPORT __main
+--main
+	LDR R0,=123
+	LDR R1,=456
+	mul r2,r1,r0
+	LDR r4,=PROD
+	str r2,[r4]
+	Area stroe,data,readwrite
+PROD DCD oxo
+	END
+
+//sum first 10
+--main 
+	MOV r0,#10
+	MOV R!,#00
+LOOP 
+	ADD r1,r0
+	subs r0,#1
+	BNR LOOP
+	LDR r2,=sum
+	STR R1,[r2]
+STOP B STOP
+	AREA SUMNUM,DARA,READWRITE
+SUM DCD oxo
+//sum n numbere without loop
+MOV r0,310
+MOV r5,#2
+ADD r1,r0,#1
+mul r3,r1,r0
+udiv r7,r3,r5
+ldr r6,=summ
+str r7,[r6]
+area data2,data,readwirte
+
+//multiplay two 32 bit numbers
+num1 dcd 0x458754
+num2 dcd ox3456985
+r1 dcd oxo
+r2 dcd oxo
+--main
+ldr r1,num1
+ldr r2,num2
+umulll r4,r3,r2,r1
+ldr r5,=r1
+ldr r6,=r2
+str r3,[r5]
+str r4,[r6
+area data2,data,readwrite
+
+//factor of num
+--main 
+mov r1,#1
+mov r2,#5
+loop
+mul r1,r2,r1
+subs r2,#1
+bne loop
+ldr r4,=fact
+str r3,[r4]
+area data2,data,readwrite
+end
+
+//squares using loopup
+--main
+ldr r0,=t1
+ldr r1,=8
+mov r1,r1,lsl #ox2
+add r0,r0,r1
+ldr r3,[r0]
+nop
+nop
